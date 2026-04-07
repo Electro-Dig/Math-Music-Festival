@@ -1,0 +1,8 @@
+{
+  "name": "函数舞蹈×手势识别",
+  "description": "A 3D visualization of mathematical functions that 'dance' over time, built with React and Three.js.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}

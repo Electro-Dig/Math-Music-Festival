@@ -1,0 +1,324 @@
+/* ==========================================================================
+   Camera Kaleidoscope - Styles
+   Based on HandsOrnament v2.1 Design System
+   ========================================================================== */
+
+/* ---------- CSS Variables ---------- */
+:root {
+    --bg: #000000;
+    --panel-bg: rgba(26, 26, 26, 0.95);
+    --panel-border: rgba(255, 255, 255, 0.08);
+    --text: #e0e0e0;
+    --text-muted: #888888;
+    --accent: #00e5ff;
+    --accent-glow: rgba(0, 229, 255, 0.3);
+    --danger: #ff4757;
+    --success: #2ed573;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+}
+
+/* Sunset theme (Light warm) */
+.app[data-theme="sunset"] {
+    --bg: #faf5e8;
+    --panel-bg: rgba(255, 248, 238, 0.98);
+    --panel-border: rgba(180, 140, 100, 0.2);
+    --text: #5a4a3a;
+    --text-muted: #8a7a6a;
+    --accent: #d4803a;
+    --accent-glow: rgba(212, 128, 58, 0.3);
+}
+
+/* ---------- Base Reset ---------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* ---------- App Layout ---------- */
+.app {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Fullscreen default, panel overlays */
+    height: 100%;
+    display: block;
+    background: #000;
+}
+
+/* ---------- Error Overlay ---------- */
+.error-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.error-box {
+    background: var(--panel-bg);
+    border: 1px solid var(--danger);
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.error-box h3 {
+    color: var(--danger);
+    margin-bottom: 8px;
+}
+
+.error-box button {
+    margin-top: 16px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+/* ---------- Panel Toggle ---------- */
+.panel-toggle {
+    position: fixed;
+    right: 260px;
+    /* Wider panel */
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
+    width: 24px;
+    height: 50px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(10px);
+}
+
+.panel-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.panel-collapsed .panel-toggle {
+    right: 0;
+    border-radius: var(--radius-sm);
+}
+
+.panel-collapsed .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* ---------- Side Panel ---------- */
+.panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 260px;
+    height: 100%;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--panel-border);
+    padding: 16px;
+    overflow-y: auto;
+    z-index: 1000;
+    backdrop-filter: blur(20px);
+    transition: transform var(--transition-normal);
+}
+
+.panel-collapsed .panel {
+    transform: translateX(100%);
+}
+
+/* ---------- UI Groups ---------- */
+.group {
+    margin-bottom: 16px;
+}
+
+.label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.sub-label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
+
+.label span {
+    color: var(--accent);
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--panel-border), transparent);
+    margin: 16px 0;
+}
+
+/* ---------- Mode Grid ---------- */
+.mode-buttons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.mode-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+}
+
+.mode-btn--active {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.mode-icon {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+/* ---------- Controls ---------- */
+input[type="range"] {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.btn-action {
+    width: 100%;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-action:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ---------- Theme Buttons ---------- */
+.theme-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.theme-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-btn--active {
+    border-color: var(--accent);
+}
+
+.theme-color {
+    position: absolute;
+    inset: 0;
+}
+
+.theme-btn--dark .theme-color {
+    background: #1a1a1a;
+}
+
+.theme-btn--sunset .theme-color {
+    background: #faf5e8;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .panel {
+        width: 100%;
+        height: 40%;
+        top: auto;
+        bottom: 0;
+    }
+
+    #canvas {
+        height: 60%;
+    }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "毕达哥拉斯分形树",
+  "description": "An interactive visualization of the Pythagoras Tree fractal, demonstrating recursive geometry and natural growth patterns with customizable parameters.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

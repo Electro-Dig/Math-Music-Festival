@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hand+Music 2x2 - 手势控制欧几里得音乐</title>
+  <script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+  <script type="module" src="https://esm.sh/@mediapipe/tasks-vision@0.10.14"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #000;
+      color: #fff;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+    
+    #container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* 视频层：底层显示摄像头画面 */
+    #videoLayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      object-fit: cover;
+    }
+    
+    /* Canvas 层：上层显示坐标平面和可视化 */
+    #canvasLayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      background-color: rgba(0, 0, 0, 0.5); /* 半透明背景，让视频可见 */
+    }
+    
+    /* 语言切换按钮 */
+    #languageToggle {
+      position: absolute;
+      top: 20px;
+      right: 320px;
+      z-index: 1001;
+      background-color: rgba(0, 0, 0, 0.85);
+      padding: 8px 16px;
+      border: 2px solid #fff;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+    
+    #languageToggle:hover {
+      background-color: rgba(123, 67, 148, 0.9);
+      border-color: #b794f6;
+    }
+    
+    /* 控制面板 */
+    #controlPanel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background-color: rgba(0, 0, 0, 0.85);
+      padding: 15px;
+      border: 2px solid #fff;
+      font-size: 12px;
+      line-height: 1.6;
+      max-width: 280px;
+      max-height: calc(100vh - 60px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    #controlPanel.collapsed {
+      width: 50px;
+      max-width: 50px;
+      padding: 15px 10px;
+      overflow: hidden;
+    }
+    
+    #controlPanel.collapsed .section {
+      display: none;
+    }
+    
+    #controlPanel.collapsed h3 {
+      display: none;
+    }
+    
+    /* 控制面板滚动条样式 */
+    #controlPanel::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    #controlPanel::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    
+    #controlPanel::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+    
+    #controlPanel::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* 折叠按钮 */
+    #collapseBtn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 24px;
+      height: 24px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid #fff;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+    
+    #collapseBtn:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    #controlPanel.collapsed #collapseBtn {
+      transform: scaleX(-1);
+    }
+    
+    #controlPanel h3 {
+      color: #b794f6;
+      margin-bottom: 10px;
+      font-size: 14px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 5px;
+    }
+    
+    #controlPanel .section {
+      margin-bottom: 15px;
+    }
+    
+    #controlPanel .label {
+      color: #4fd1c7;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    #controlPanel .info {
+      color: #ccc;
+      margin-left: 10px;
+    }
+    
+    /* 加载提示 */
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2000;
+      text-align: center;
+      font-size: 18px;
+    }
+    
+    #loading.hidden {
+      display: none;
+    }
+    
+    /* 错误提示 */
+    #error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2000;
+      background-color: rgba(255, 0, 0, 0.9);
+      color: #fff;
+      padding: 20px;
+      border: 2px solid #fff;
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    #error.hidden {
+      display: none;
+    }
+    
+    /* 透明度滑块样式 */
+    #canvasOpacitySlider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: #444;
+      outline: none;
+      border-radius: 2px;
+    }
+    
+    #canvasOpacitySlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    
+    #canvasOpacitySlider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 50%;
+      border: none;
+    }
+    
+    /* 镜像按钮 */
+    .mirror-btn {
+      width: 100%;
+      padding: 8px;
+      background-color: rgba(123, 67, 148, 0.8);
+      color: #fff;
+      border: 1px solid #fff;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    
+    .mirror-btn:hover {
+      background-color: rgba(123, 67, 148, 1);
+    }
+    
+    .mirror-btn.active {
+      background-color: rgba(79, 209, 199, 0.8);
+    }
+    
+    /* 状态栏样式 */
+    #statusBar {
+      user-select: none;
+    }
+    
+    .status-bar-content {
+      background: linear-gradient(135deg, rgba(240, 240, 240, 0.85), rgba(250, 250, 250, 0.75));
+      color: #2d3748;
+      font-size: 13px;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(200, 200, 200, 0.3);
+      backdrop-filter: blur(10px);
+      min-width: 500px;
+    }
+    
+    .status-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #4a5568;
+      margin-bottom: 10px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-items {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    
+    .status-item {
+      flex: 1;
+      text-align: center;
+    }
+    
+    .status-label {
+      color: #718096;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+    
+    .status-value {
+      font-weight: 500;
+      color: #2d3748;
+      font-size: 13px;
+    }
+    
+    /* 参数滑块样式 */
+    #tempoSlider, #harmonyLengthSlider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: #444;
+      outline: none;
+      border-radius: 2px;
+    }
+    
+    #tempoSlider::-webkit-slider-thumb,
+    #harmonyLengthSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    
+    #tempoSlider::-moz-range-thumb,
+    #harmonyLengthSlider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 50%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <!-- 视频层：底层摄像头画面 -->
+    <video id="videoLayer" autoplay playsinline muted></video>
+    
+    <!-- Canvas 层：上层坐标平面和可视化 -->
+    <canvas id="canvasLayer"></canvas>
+    
+    <!-- 语言切换按钮 -->
+    <button id="languageToggle">中文 / EN</button>
+    
+    <!-- 控制面板 -->
+    <div id="controlPanel">
+      <button id="collapseBtn" title="折叠/展开">◀</button>
+      <h3 data-i18n="guide.title">🎮 操作指南</h3>
+      
+      <div class="section">
+        <div class="label" data-i18n="guide.leftHand.title">👈 左手控制</div>
+        <div class="info" data-i18n="guide.leftHand.moveUpDown">• 上下移动：控制音高</div>
+        <div class="info" data-i18n="guide.leftHand.pinchDistance">• 拇指食指距离：控制音量</div>
+        <div class="info" data-i18n="guide.leftHand.fist">• 握拳：切换音色</div>
+      </div>
+      
+      <div class="section">
+        <div class="label" data-i18n="guide.rightHand.title">👉 右手控制</div>
+        <div class="info" data-i18n="guide.rightHand.pinch">• 拇指+食指捏合：控制 XY Pad</div>
+        <div class="info" data-i18n="guide.rightHand.release">• 松开：脱离控制</div>
+      </div>
+      
+      <div class="section">
+        <div class="label" data-i18n="status.title">📊 状态</div>
+        <div class="info"><span data-i18n="status.leftHand">左手</span>: <span id="leftHandStatus">未检测</span></div>
+        <div class="info"><span data-i18n="status.rightHand">右手</span>: <span id="rightHandStatus">未检测</span></div>
+        <div class="info"><span data-i18n="status.xyPad">XY Pad</span>: <span id="padStatus">未激活</span></div>
+      </div>
+      
+      <div class="section">
+        <div class="label" data-i18n="canvasOpacity.title">🎨 画布透明度</div>
+        <input type="range" id="canvasOpacitySlider" min="0" max="100" value="50" style="width: 100%; margin-top: 5px;">
+        <div class="info" style="text-align: center; margin-top: 5px;">
+          <span id="opacityValue">50%</span>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="label" data-i18n="camera.title">📹 摄像头</div>
+        <button id="mirrorToggleBtn" class="mirror-btn">🔄 镜像</button>
+      </div>
+      
+      <div class="section">
+        <div class="label" data-i18n="parameters.title">🎵 参数调节</div>
+        <div class="info" style="margin-bottom: 5px;"><span data-i18n="parameters.tempo">Tempo</span>: <span id="tempoValue">120</span> BPM</div>
+        <input type="range" id="tempoSlider" min="30" max="240" value="120" style="width: 100%; margin-bottom: 10px;">
+        <div class="info" style="margin-bottom: 5px;"><span data-i18n="parameters.chordSize">Chord Size</span>: <span id="harmonyLengthValue">8</span></div>
+        <input type="range" id="harmonyLengthSlider" min="2" max="16" value="8" style="width: 100%;">
+      </div>
+      
+      <div class="section">
+        <div class="label" data-i18n="audioEffects.title">🎚 音频效果</div>
+        <div class="info" style="margin-bottom: 5px;"><span data-i18n="audioEffects.delayWet">Delay Wet</span>: <span id="delayWetValue">0.20</span></div>
+        <input type="range" id="delayWetSlider" min="0" max="1" step="0.01" value="0.20" style="width: 100%; margin-bottom: 10px;">
+        <div class="info" style="margin-bottom: 5px;"><span data-i18n="audioEffects.delayTime">Delay Time</span>: <span id="delayTimeValue">8n</span></div>
+        <input type="range" id="delayTimeSlider" min="0" max="4" value="1" style="width: 100%; margin-bottom: 10px;">
+        <div class="info" style="margin-bottom: 5px;"><span data-i18n="audioEffects.reverbWet">Reverb Wet</span>: <span id="reverbWetValue">0.22</span></div>
+        <input type="range" id="reverbWetSlider" min="0" max="1" step="0.01" value="0.22" style="width: 100%;">
+      </div>
+      
+      <div class="section">
+        <div class="label" data-i18n="scaleSettings.title">🎼 音阶设置</div>
+        <div class="info" style="margin-bottom: 5px;"><span data-i18n="scaleSettings.root">根音</span></div>
+        <select id="scaleRootSelect" style="width: 100%; padding: 6px; background: #000; color: #fff; border: 1px solid #fff; font-family: 'Courier New', monospace; margin-bottom: 8px;">
+          <option>C</option>
+          <option>C#</option>
+          <option>D</option>
+          <option>D#</option>
+          <option>E</option>
+          <option>F</option>
+          <option>F#</option>
+          <option>G</option>
+          <option>G#</option>
+          <option>A</option>
+          <option>A#</option>
+          <option>B</option>
+        </select>
+        <div class="info" style="margin-bottom: 5px;"><span data-i18n="scaleSettings.mode">调式</span></div>
+        <select id="scaleModeSelect" style="width: 100%; padding: 6px; background: #000; color: #fff; border: 1px solid #fff; font-family: 'Courier New', monospace;">
+          <option value="minorPentatonic" selected>Minor Pentatonic</option>
+          <option value="majorPentatonic">Major Pentatonic</option>
+          <option value="major">Major (Ionian)</option>
+          <option value="minor">Natural Minor (Aeolian)</option>
+          <option value="dorian">Dorian</option>
+          <option value="phrygian">Phrygian</option>
+          <option value="lydian">Lydian</option>
+          <option value="mixolydian">Mixolydian</option>
+          <option value="locrian">Locrian</option>
+          <option value="chromatic">Chromatic</option>
+        </select>
+      </div>
+      
+      <div class="section">
+        <div class="label" data-i18n="visualMode.title">🌀 视觉模式</div>
+        <select id="visualModeSelect" style="width: 100%; padding: 6px; background: #000; color: #fff; border: 1px solid #fff; font-family: 'Courier New', monospace;">
+          <option value="grid" selected data-i18n="visualMode.grid">网格</option>
+          <option value="rings" data-i18n="visualMode.rings">圆环</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- 状态栏：中间上方 -->
+    <div id="statusBar" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;">
+      <div class="status-bar-content">
+        <div class="status-title" data-i18n="statusBar.title">🎵 当前状态</div>
+        <div class="status-items">
+          <div class="status-item">
+            <div class="status-label" data-i18n="statusBar.timbre">音色</div>
+            <div id="statusSynth" class="status-value">DX7 MARIMBA</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label" data-i18n="statusBar.coords">坐标</div>
+            <div id="statusCoords" class="status-value">(0.50, 0.50)</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label" data-i18n="statusBar.note">音阶</div>
+            <div id="statusNote" class="status-value">C4</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label" data-i18n="statusBar.tempo">节拍</div>
+            <div id="statusTempo" class="status-value">120 BPM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 加载提示 -->
+    <div id="loading">
+      <div data-i18n="loading.initializing">正在初始化...</div>
+      <div style="margin-top: 10px; font-size: 14px; color: #888;">
+        请允许摄像头访问权限
+      </div>
+    </div>
+    
+    <!-- 错误提示 -->
+    <div id="error" class="hidden"></div>
+  </div>
+  
+  <script type="module" src="main.js"></script>
+</body>
+</html>
+

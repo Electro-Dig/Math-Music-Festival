@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Camera Kaleidoscope · 镜头万花筒</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <main class="app">
+        <canvas id="canvas" aria-label="kaleidoscope-canvas"></canvas>
+
+        <!-- Error Message Overlay -->
+        <div id="errorOverlay" class="error-overlay hidden">
+            <div class="error-box">
+                <h3>⚠️ Camera Error</h3>
+                <p id="errorMsg">Please check camera permissions.</p>
+                <button id="btnRetry">Retry</button>
+            </div>
+        </div>
+
+        <button id="panelToggle" class="panel-toggle" aria-label="Toggle Panel">
+            <span class="toggle-icon">◀</span>
+        </button>
+
+        <section class="panel" aria-label="controls">
+            <!-- Mode Selection -->
+            <div class="group">
+                <label class="label">🔮 视觉模式 (Mode)</label>
+                <div class="mode-buttons-grid">
+                    <button class="mode-btn mode-btn--active" data-mode="rosette">
+                        <span class="mode-icon">✦</span>
+                        <span>圆心 (Rosette)</span>
+                    </button>
+                    <button class="mode-btn" data-mode="tiling">
+                        <span class="mode-icon">▦</span>
+                        <span>平面 (Prism)</span>
+                    </button>
+                    <button class="mode-btn" data-mode="spherical">
+                        <span class="mode-icon">🔮</span>
+                        <span>球面 (Sphere)</span>
+                    </button>
+                    <button class="mode-btn" data-mode="hyperbolic">
+                        <span class="mode-icon">🌀</span>
+                        <span>双曲 (Hyperbolic)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Core Parameters -->
+            <div class="group" id="grpSegment">
+                <label class="label">🔢 分段数量 (Segments) <span id="valSegments">8</span></label>
+                <input id="inpSegments" class="control" type="range" min="3" max="24" step="1" value="8">
+            </div>
+
+            <!-- Transformation Controls -->
+            <div class="group">
+                <label class="label">📐 视角变换 (Transform)</label>
+
+                <label class="sub-label">缩放 (Zoom)</label>
+                <input id="inpZoom" class="control" type="range" min="0.5" max="3.0" step="0.01" value="1.0">
+
+                <label class="sub-label">旋转 (Rotate)</label>
+                <input id="inpRotate" class="control" type="range" min="0" max="6.28" step="0.01" value="0">
+
+                <label class="sub-label">水平位移 (Pan X)</label>
+                <input id="inpPanX" class="control" type="range" min="-1.0" max="1.0" step="0.01" value="0">
+
+                <label class="sub-label">垂直位移 (Pan Y)</label>
+                <input id="inpPanY" class="control" type="range" min="-1.0" max="1.0" step="0.01" value="0">
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Actions -->
+            <div class="group">
+                <label class="label">📸 操作 (Actions)</label>
+                <div class="tools-grid-2">
+                    <button id="btnScreenshot" class="btn btn-action" aria-label="Screenshot" title="截图">
+                        📷 截图
+                    </button>
+                    <!-- Future: Recording? -->
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Theme Section -->
+            <div class="group">
+                <label class="label">🎨 主题 (Theme)</label>
+                <div class="theme-buttons">
+                    <button class="theme-btn theme-btn--dark theme-btn--active" data-theme="dark" title="暗黑">
+                        <span class="theme-color"></span>
+                    </button>
+                    <button class="theme-btn theme-btn--sunset" data-theme="sunset" title="落日橙">
+                        <span class="theme-color"></span>
+                    </button>
+                    <!-- Kept simplier for now -->
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Shader Sources -->
+    <script type="x-shader/x-vertex" id="vs-source">
+        attribute vec2 a_position;
+        varying vec2 v_uv;
+        void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+            v_uv = a_position * 0.5 + 0.5;
+            v_uv.y = 1.0 - v_uv.y; // Flip Y for texture
+        }
+    </script>
+
+    <!-- We will load fragment shaders via JS or use modules -->
+    <script type="module" src="./main.js"></script>
+</body>
+
+</html>

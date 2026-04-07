@@ -1,0 +1,8 @@
+{
+  "name": "克拉德尼板模拟器",
+  "description": "A physics simulation of Chladni figures where sand particles form complex geometric patterns on a vibrating plate based on wave frequency modes.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}

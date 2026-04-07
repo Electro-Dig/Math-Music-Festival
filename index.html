@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & Math & Music Festival</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #1a1a2e;
+            --primary: #6c5ce7;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(26,26,46,0.8), rgba(10,10,15,1));
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            background: linear-gradient(to right, #a8c0ff, #3f2b96);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 1rem auto 0;
+        }
+        main {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .project-card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.2);
+            border-color: rgba(108, 92, 231, 0.5);
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        .desc {
+            color: var(--text-muted);
+            flex-grow: 1;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Math & Music Festival</h1>
+        <p class="subtitle">A collection of interactive projects combining Mathematics, AI, and Music</p>
+    </header>
+    <main>
+        <a href="./毕达哥拉斯分形树/index.html" class="project-card">
+            <h2>毕达哥拉斯分形树 <br>(Pythagoras Fractal Tree)</h2>
+            <p class="desc">A geometric fractal tree generator that produces beautiful visualizations through iterative scaling and rotation.</p>
+        </a>
+        <a href="./函数舞蹈/index.html" class="project-card">
+            <h2>函数舞蹈 <br>(Function Dance)</h2>
+            <p class="desc">A creative coding project exploring the choreographic patterns formed by mathematical equations and trigonometric functions.</p>
+        </a>
+        <a href="./克拉德尼板模拟器/index.html" class="project-card">
+            <h2>克拉德尼板模拟器 <br>(Chladni Plate Simulator)</h2>
+            <p class="desc">Interactive simulation of Chladni figures, demonstrating standing wave patterns in vibrating plates using classical physics.</p>
+        </a>
+        <a href="./hand+music 2x2/index.html" class="project-card">
+            <h2>Hand & Music 2x2</h2>
+            <p class="desc">An AI-powered music generation tool using hand gestures to control a matrix of sound elements, blending computer vision with audio art.</p>
+        </a>
+        <a href="./camera-kaleidoscope/index.html" class="project-card">
+            <h2>Camera Kaleidoscope</h2>
+            <p class="desc">Transforms standard webcam feeds into mesmerizing interactive kaleidoscope patterns in real-time.</p>
+        </a>
+        <a href="./handswhitney/index.html" class="project-card">
+            <h2>Hands Whitney</h2>
+            <p class="desc">An audiovisual experience inspired by John Whitney, driven by real-time hand-tracking technology to compose visual music.</p>
+        </a>
+    </main>
+    <footer>
+        &copy; 2026 AI × Math × Music Project
+    </footer>
+</body>
+</html>
